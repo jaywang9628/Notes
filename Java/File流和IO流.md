@@ -363,32 +363,228 @@ java.io.InputStream抽象类是所有表示字节输入流的超类。
 
 ### 3.1 字符输入流【Reader】
 
+- 使用字节读取中文文件
+
+  - 1个中文
+
+    GBK：占用2个字节
+
+    UTF-8：占用3个字节
+
+- 常用功能
+
+  - `public void close()` 关闭流并释放资源
+  - `public int read()` 读取单个字节并返回
+  - `public int read(char[], cbuf[])` 一次读取多个字节，，将字节读入数组
+
 ### 3.2 FileReader类
 
+- `java.io.FileReader extends InputStreamReader extends Reader`
+
+  把硬盘文件中的数据以字符的方式读取到内存中
+
 - 构造方法
+
+  `FileReader(String filename)`
+
+  `FileReader(File file)`
+
+  1. 会创建一个FileReader对象
+  2. 会把FileReader对象指向要读取的文件
 
 - 读取字符数据
 
+  `Read`方法，每次可以读取一个字符的数据，提升为int类型，读取到文件末尾，返回-1。
+
+- 字符输入流使用步骤
+
+  1. 创建FileReader对象，构造方法中绑定要读取的数据源
+  2. 使用FileReader对象中的方法read读取文件
+  3. 释放资源
+
+```java
+/*
+	String类的构造方法
+		1.String(char[] value)
+		2.String(char[] value,int offset,int count)
+*/
+	FileReader fr = new FileReader(\\wjj\\wjj.txt);    
+
+	char[] cs = new char[1024];
+    int len =0;
+    while((len = fr.read(cs))!=-1){
+        System.out.println(new String(cs,0,len));
+    }
+    fr.close();
+```
+
 ### 3.3 字符输出流【Writer】
+
+- `void write(int c)`写入单个字符
+- `void write(char[] cbuf)`写入字符数组
+- `void write(String str)`写入字符串
+- `void write((String str, int off ,int len)`写入字符串的一部分
+- `void flush()`
+- `void close()`
 
 ### 3.4 FileWriter类
 
+文件字符输出流
+
 - 构造方法
+
+  - `FileWriter(File file)`
+  - `FileWriter(String filename)`
 
 - 基本写出数据
 
+  ```java
+  FileWriter fw = new FileWriter("fw.txt");
+  fw.write(97);
+  fw.write("a");
+  fw.write(30000);//会写入一个汉子（系统默认GBK编码）
+  fw.close();
+  ```
+
+  
+
 - 关闭和刷新
+
+  由于内置缓存区的原因，如果不关闭输出流，就无法写出字符到文件中。但是关闭的流对象，是无法继续写出数据的。如果我们既想写出数据，又想继续使用流，就需要`flush`方法
+
+  - `flush()`:刷新缓冲区，流对象可以继续使用
+
+  - `close()`:先刷新缓存区，然后通知系统释放资源。流对象不可以再被使用了
+
+  
 
 - 写出其他数据
 
 ## 第四章 IO异常的处理
 
-### 4.1 
+### 4.1  try_catch处理流中的异常
 
-### 4.2
+------
 
-### 4.3
+# 第三部分 更强大的流
 
-### 4.4
+## 第一章 缓冲流
 
-### 4.5
+### 1.1概述
+
+- 高效流，是对4个FileXxx的增强，所以也是4个流
+- 基本原理是在创建流对象时，会创建一个内置的默认大小的缓冲区数组，通过缓冲区读写，减少系统IO次数，从而提高读写的效率
+
+### 1.2 字节缓冲流
+
+- `BufferedInputStream(InputStream in)`创建一个新的缓冲输入流
+
+  ```java
+  public class Demo2 {
+      public static void main(String[] args) throws IOException {
+          BufferedInputStream bis = new BufferedInputStream(
+                  new FileInputStream("wjj.txt"));
+          byte[] bytes = new byte[1024];
+          int len = 0;
+          while ((len = bis.read(bytes))!=-1){
+              System.out.println(new String(bytes,0,len));
+          }
+          bis.close();
+      }
+  }
+  ```
+
+  
+
+- `BufferedOutputStream(OutputStream out)`创建一个新的缓冲输出流
+
+  ```java
+  public class Demo1 {
+      public static void main(String[] args) throws IOException {
+  
+          BufferedOutputStream bos= new BufferedOutputStream(
+                  new FileOutputStream("wjj.txt"));
+          bos.write("我把数据写入内部缓存区".getBytes());
+          bos.close();
+      }
+  }
+  ```
+
+  
+
+### 1.3 字符缓冲流
+
+- `BufferedReader(Reader in)`创建一个新的缓冲字符输入流
+
+  ```java
+  public class Demo4 {
+      public static void main(String[] args) throws IOException {
+          BufferedReader br = new BufferedReader(
+                  new FileReader("wjj.txt"));
+  //        String line = br.readLine();
+  //        System.out.println(line);
+  //        br.close();
+          //循环优化
+          String line;
+          while ((line = br.readLine())!=null){
+              System.out.println(line);
+          }
+          br.close();
+      }
+  }
+  ```
+
+- `BufferedWriter(Writer out)`创建一个新的缓冲字符输出流
+
+  ```java
+  public class Demo3 {
+      public static void main(String[] args) throws IOException {
+          BufferedWriter bw = new BufferedWriter(
+                  new FileWriter("wjj.txt"));
+          bw.write("你是谁");
+          bw.close();
+      }
+  }
+  ```
+
+### 1.4 文本排序
+
+```java
+public class Demo5 {
+    public static void main(String[] args) throws IOException {
+        HashMap<String,String> map = new HashMap<>();
+        BufferedReader br = new BufferedReader(
+                new FileReader("in.txt"));
+        BufferedWriter bw = new BufferedWriter(
+                new FileWriter("out.txt"));
+        String line;
+        while ((line = br.readLine())!=null){
+            String[] arr = line.split("\\.");
+            map.put(arr[0],arr[1]);//key是有序的，会自动排序
+        }
+        for(String key : map.keySet()){
+            String value = map.get(key);
+            line = key+"."+value;
+            bw.write(line);
+        }
+        bw.close();
+        br.close();
+    }
+}
+```
+
+## 第二章 转换流
+
+### 2.1字符编码和字符集
+
+### 2.2 编码引出的问题
+
+### 2.3 InputStreamReader类
+
+### 2.4 OutputStreamWriter类
+
+### 2.5 练习
+
+## 第三章 序列化流
+
+## 第四章 打印流
