@@ -577,14 +577,171 @@ public class Demo5 {
 
 ### 2.1字符编码和字符集
 
+- 字符编码：一套自然语言的字符和二进制数直接的对应规则
+- 字符集：编码表。是一个系统支持的所有字符的集合
+  - ASCII字符集：128个基本字符，256个是拓展字符：单字节编码
+  - ISO-8859-1字符集：拉丁文字符集
+  - GB字符集
+    - GB2312 简体中文码
+    - GBK 常用的中文编码集：双字节编码
+    - GB18030 新版
+  - Unicode字符集
+    - 统一码，万国码
+    - 最多使用4个字节编码
+    - 中文一般3个字节
+
 ### 2.2 编码引出的问题
 
 ### 2.3 InputStreamReader类
 
+`java.io.InputStreamReader extends Reader`
+
+```java
+public class Demo2 {
+    public static void main(String[] args) throws IOException {
+        InputStreamReader isr = new InputStreamReader(
+                new FileInputStream("wjj.txt"),"gbk");
+        int len =0;
+        while((len = isr.read())!= -1){
+            isr.read();
+        }
+        isr.close();
+    }
+}
+```
+
+
+
 ### 2.4 OutputStreamWriter类
 
-### 2.5 练习
+`java.io.OutputStreamWriter extends Writer`
+
+```java
+public class Demo1 {
+    public static void main(String[] args) throws IOException {
+        OutputStreamWriter osw = new OutputStreamWriter(
+                new FileOutputStream("wjj.txt"),"gbk");
+        osw.write("你好");
+        osw.close();
+    }
+}
+
+```
+
+### 2.5 练习：转换文件格式
+
+```java
+public class Demo3 {
+    public static void main(String[] args) throws IOException {
+        InputStreamReader isr = new InputStreamReader(
+                new FileInputStream("wjj_1.txt"),"gbk");
+        OutputStreamWriter osw = new OutputStreamWriter (
+                new FileOutputStream("wjj_2.txt"),"UTF-8");
+        int len =0;
+        while((len = isr.read())!= -1){
+            osw.write(len);
+        }
+        isr.close();
+        osw.close();
+    }
+}
+```
+
+
 
 ## 第三章 序列化流
 
+### 3.1 概述
+
+### 3.2 ObjectOutputStream类
+
+### 3.3 ObjectInputStream类
+
+### 3.4 练习：序列化集合
+
 ## 第四章 打印流
+
+### 4.1 概述
+
+### 4.2 PrintStream类
+
+## 第五章 Properties集合
+
+### 5.1 Properties类介绍
+
+- public class Properties extends Hashtable<Object,Object>
+
+- Properties类表示一组持久的属性。 Properties可以保存到流中或从流中加载。 属性列表中的每个键及其对应的值都是一个字符串。
+  属性列表可以包含另一个属性列表作为其“默认值”; 如果在原始属性列表中找不到属性键，则会搜索此第二个属性列表。
+
+- 因为Properties从继承Hashtable时， put种putAll方法可应用于Properties对象。 强烈不鼓励使用它们，因为它们允许调用者插入其键或值不是Strings 。 应该使用setProperty方法。 如果store或save方法在包含非String键或值的“受损害” Properties对象上调用，则调用将失败。 类似地，如果在包含非String密钥的“受损害” Properties对象上调用propertyNames或list方法的调用将失败。
+
+### 5.2 Properties类的特点
+
+- 该集合不能写泛型
+- 可以持久化的属性集。键值可以存储到集合中，也可以存储到硬盘、U盘等
+- 可以和IO流有关的技术结合使用
+
+### 5.3 Properties类中的一些方法
+
+- 构造方法
+  - `Properties()`创建一个没有默认值的空属性列表。
+  - `Properties(Properties defaults)` 创建具有指定默认值的空属性列表。
+
+- `void load(InputStream in)`从输入字节流读取属性列表（键和元素对）
+- `void load(Reader in)`以简单的线性格式从输入字符流读取属性列表（关键字和元素对）。
+- `store(OutputStream out, String comments)`
+  将此属性列表（键和元素对）写入此 Properties表中，以适合于使用 load(InputStream)方法加载到 Properties表中的格式输出流。
+- `store(Writer writer, String comments)`
+将此属性列表（键和元素对）写入此 Properties表中，以适合使用 load(Reader)方法的格式输出到输出字符流。
+
+### 5.4 测试文件内容
+
+```java
+
+package com.xiao.properties;
+ 
+import org.junit.Test;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.Properties;
+/**
+ * @Author 笑笑
+ * @Date 19:25 2018/05/19
+ */
+public class PropertiesDemo {
+ 
+    //Object setProperty(String key, String value)
+    @Test
+    public void test_01(){
+        Properties pro = new Properties();
+        pro.setProperty("a","123");
+        pro.setProperty("b","123");
+        pro.setProperty("c","123");
+        System.out.println(pro);
+    }
+    // String getProperty(String key) 用指定的键在此属性列表中搜索属性。
+    @Test
+    public void test_02(){
+        Properties pro = new Properties();
+        pro.setProperty("a","123");
+        pro.setProperty("b","123");
+        pro.setProperty("c","123");
+ 
+        String v = pro.getProperty("a");
+        System.out.println(v);
+    }
+ 
+    //void load(InputStream inStream) 从输入流中读取属性列表（键和元素对）
+    @Test
+    public void test_03() throws  Exception{
+        Properties pro = new Properties();
+        InputStream in = new FileInputStream("c:\\pro.properties");
+        //调用方法load,传入输入流
+        pro.load(in);
+        //关闭流
+        in.close();
+        System.out.println(pro);
+    }
+```
+
