@@ -653,17 +653,117 @@ public class Demo3 {
 
 ### 3.1 概述
 
+- 用一个字节序列表示一个对象，该字节对象包含了对象的数据、类型和存储的属性，叫做序列化
+- 该字节序列还可以从文件中读取回来重构对象，叫做反序列化
+
 ### 3.2 ObjectOutputStream类
+
+- 对象的序列化流java.io.ObjectOutpuStream extends OUtputStream
+
+- `Person p = new Person("Bill",33)`，使用其中的writeObject方法
+
+  - 注意：
+    1. 对象必须要实现Serializable接口（称为标记型接口），才可被序列化和反序列化
+
+  ```java
+  public static void main (String[] args){
+      ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("wjj.txt"));
+      oos.writeObject(new Person("Bill",33));
+      oos.close();
+  }
+  ```
+
+  
 
 ### 3.3 ObjectInputStream类
 
+- 对象的反序列化java.io.ObjectInputStream extends InputStream
+
+- `Object obj = new Person("Bill",33)`,使用readObject方法接受
+
+- 注意：
+
+  1. 实现Serializable接口
+
+  2. 处理ClassNotFoundException
+
+  3. 如果序列化之后修改了class文件，反序列化会失败
+
+     除非使用`private static final long serialVersionUID=1L`来指定序列号
+
+  ```java
+  public static void main (String[] args){
+      ObjectInputStream oos = new ObjectInputStream(new FileInputStream("wjj.txt"));
+      Object o = ois.readObject();
+      oos.close();
+      p = (Person) o;
+      System.out.println(p.getName()+p.getAge());
+  }
+  ```
+
+  
+
 ### 3.4 练习：序列化集合
+
+- static 静态关键字
+  - 静态优先非静态加载到内存中
+  - 被static修饰的成员变量不能被序列化，被序列化的都是对象
+- transient 瞬态关键字
+  - 被transient修饰的成员变量不能被序列化
+
+```java
+public class Demo6 {
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
+        ArrayList<Student> list = new ArrayList<>();
+        list.add(new Student("Bill",18));
+        list.add(new Student("wjj",22));
+        list.add(new Student("lyy",22));
+
+        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("wjj.txt"));
+        ObjectInputStream ois = new ObjectInputStream(new FileInputStream("wjj.txt"));
+        oos.writeObject(list);
+        Object o = ois.readObject();
+
+        ArrayList<Student> list2 = (ArrayList<Student>)o;
+        for (Student s : list2) {
+            System.out.println(s);
+        }
+
+        ois.close();
+        oos.close();
+    }
+}
+```
+
+
 
 ## 第四章 打印流
 
 ### 4.1 概述
 
+- java.io.PrintStream extends OutputStream
+- print和println方法
+
 ### 4.2 PrintStream类
+
+- 构造方法
+
+  `public PrintStream(String filename)`使用制定的文件名创建一个新的打印流
+
+- 改变打印流向
+
+  `System.out`就是PrintStream类的，打印在控制台
+
+  ```java
+  PrintStream ps = new PrintStrem("wjj.txt");
+  ps.write(97);//显示a
+  ps.print(97);//显示97
+  
+System.setOut(ps);//设置打印流向
+  System.out.println();//此时不在控制台而在文件中输出
+  ```
+  
+  
 
 ## 第五章 Properties集合
 
@@ -674,7 +774,7 @@ public class Demo3 {
 - Properties类表示一组持久的属性。 Properties可以保存到流中或从流中加载。 属性列表中的每个键及其对应的值都是一个字符串。
   属性列表可以包含另一个属性列表作为其“默认值”; 如果在原始属性列表中找不到属性键，则会搜索此第二个属性列表。
 
-- 因为Properties从继承Hashtable时， put种putAll方法可应用于Properties对象。 强烈不鼓励使用它们，因为它们允许调用者插入其键或值不是Strings 。 应该使用setProperty方法。 如果store或save方法在包含非String键或值的“受损害” Properties对象上调用，则调用将失败。 类似地，如果在包含非String密钥的“受损害” Properties对象上调用propertyNames或list方法的调用将失败。
+- 因为Properties从继承Hashtable时， put种putAll方法可应用于Properties对象。 强烈不鼓励使用它们，因为它们允许调用者插入其键或值不是Strings 。 应该使用`setProperty`方法。 如果store或save方法在包含非String键或值的“受损害” Properties对象上调用，则调用将失败。 类似地，如果在包含非String密钥的“受损害” Properties对象上调用propertyNames或list方法的调用将失败。
 
 ### 5.2 Properties类的特点
 
@@ -687,15 +787,17 @@ public class Demo3 {
 - 构造方法
   - `Properties()`创建一个没有默认值的空属性列表。
   - `Properties(Properties defaults)` 创建具有指定默认值的空属性列表。
+- 常用方法
+  - `setProperty(String str1,String str2)`取代put方法
+  - `getProperty(String str1)`通过键来获取值
+  - `void load(InputStream in)`从输入流中读取属性列表（键和元素对）
+  - `void load(Reader in)`以简单的线性格式从输入字符流读取属性列表（关键字和元素对）
+  - `store(OutputStream out, String comments)`
+    将此属性列表（键和元素对）写入此 Properties表中，以适合于使用 load(InputStream)方法加载到 Properties表中的格式输出流。
+  - `store(Writer writer, String comments)`
+  将此属性列表（键和元素对）写入此 Properties表中，以适合使用 load(Reader)方法的格式输出到输出字符流。
 
-- `void load(InputStream in)`从输入字节流读取属性列表（键和元素对）
-- `void load(Reader in)`以简单的线性格式从输入字符流读取属性列表（关键字和元素对）。
-- `store(OutputStream out, String comments)`
-  将此属性列表（键和元素对）写入此 Properties表中，以适合于使用 load(InputStream)方法加载到 Properties表中的格式输出流。
-- `store(Writer writer, String comments)`
-将此属性列表（键和元素对）写入此 Properties表中，以适合使用 load(Reader)方法的格式输出到输出字符流。
-
-### 5.4 测试文件内容
+### 5.4 Demo
 
 ```java
 
